@@ -40,6 +40,8 @@ class CareerEntry(TimestampedModel):
 
     class Meta:
         ordering = ['-duration_start']
+        verbose_name = 'career entry'
+        verbose_name_plural = 'career entries'
 
 class Skill(TimestampedModel):
     PROFICIENCY_CHOICES = [
