@@ -4,30 +4,30 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiGet, apiDelete } from '@/lib/api';
 import { useRequireAuth } from '@/lib/useAuth';
-import { CareerEntry } from '@/lib/types';
+import { Skill } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-export default function CareerBankPage() {
+export default function SkillsPage() {
   const ready = useRequireAuth();
-  const [entries, setEntries] = useState<CareerEntry[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!ready) return;
-    apiGet('/career-entries/')
-      .then((data) => setEntries(data.results))
+    apiGet('/skills/')
+      .then((data) => setSkills(data.results))
       .catch((err) => setError(err.message));
   }, [ready]);
 
   if (!ready) return null;
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this entry?')) return;
+    if (!confirm('Delete this skill?')) return;
     try {
-      await apiDelete(`/career-entries/${id}/`);
-      setEntries(entries.filter((e) => e.id !== id));
+      await apiDelete(`/skills/${id}/`);
+      setSkills(skills.filter((s) => s.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete');
     }
@@ -36,31 +36,28 @@ export default function CareerBankPage() {
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Career Bank</h1>
-        <div className="flex gap-2">
-          <Link href="/skills"><Button variant="outline">Skills</Button></Link>
-          <Link href="/careerEntries/new"><Button>Add Entry</Button></Link>
-        </div>
+        <h1 className="text-2xl font-bold">Skills</h1>
+        <Link href="/skills/new">
+          <Button>Add Skill</Button>
+        </Link>
       </div>
       {error && <p className="text-red-500">{error}</p>}
       <div className="flex flex-col gap-4">
-        {entries.map((entry) => (
-          <Card key={entry.id}>
+        {skills.map((skill) => (
+          <Card key={skill.id}>
             <CardHeader>
-              <CardTitle>{entry.title}</CardTitle>
+              <CardTitle>{skill.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-2">{entry.description}</p>
               <div className="flex gap-1 flex-wrap mb-2">
-                {entry.tech_stack.map((tech) => (
-                  <Badge key={tech} variant="secondary">{tech}</Badge>
-                ))}
+                {skill.category && <Badge variant="secondary">{skill.category}</Badge>}
+                <Badge>{skill.proficiency}</Badge>
               </div>
               <div className="flex gap-2">
-                <Link href={`/careerEntries/${entry.id}/edit`}>
+                <Link href={`/skills/${skill.id}/edit`}>
                   <Button variant="outline" size="sm">Edit</Button>
                 </Link>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(entry.id)}>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(skill.id)}>
                   Delete
                 </Button>
               </div>

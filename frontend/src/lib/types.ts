@@ -11,3 +11,12 @@ export interface CareerEntry {
   created_at: string;
   updated_at: string;
 }
+
+export interface Skill {
+  id: number;
+  name: string;
+  category: string;
+  proficiency: string;
+  created_at: string;
+  updated_at: string;
+}

@@ -4,14 +4,16 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get('username') as string;
+    const password = formData.get('password') as string;
 
     const res = await fetch('http://localhost:8000/api/token/', {
       method: 'POST',
@@ -33,16 +35,16 @@ export default function LoginPage() {
   return (
     <form onSubmit={handleLogin} className="p-8 max-w-sm mx-auto flex flex-col gap-4">
       <input
+        name="username"
         placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        autoComplete="username"
         className="border p-2 rounded"
       />
       <input
-        placeholder="Password"
+        name="password"
         type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        autoComplete="current-password"
         className="border p-2 rounded"
       />
       {error && <p className="text-red-500 text-sm">{error}</p>}

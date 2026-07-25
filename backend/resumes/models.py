@@ -32,6 +32,7 @@ class ResumeVersion(TimestampedModel):
     version_number = models.PositiveIntegerField()
     content = models.JSONField()                       # structured resume sections/bullets
     diff_from_previous = models.JSONField(null=True, blank=True)
+    pdf_file = models.FileField(upload_to='resumes/', null=True, blank=True)
 
     class Meta:
         ordering = ['-version_number']
