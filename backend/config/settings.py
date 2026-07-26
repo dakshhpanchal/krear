@@ -6,6 +6,7 @@ from pathlib import Path
 import os
 import dj_database_url
 from dotenv import load_dotenv
+import ssl
 
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -87,7 +88,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 if REDIS_URL.startswith('rediss://'):
-    ssl_opts = {'ssl_cert_reqs': 'CERT_NONE'}
+    ssl_opts = {'ssl_cert_reqs': ssl.CERT_NONE}
     CELERY_BROKER_USE_SSL = ssl_opts
     CELERY_REDIS_BACKEND_USE_SSL = ssl_opts
 
