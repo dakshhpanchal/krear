@@ -39,6 +39,7 @@ export default function CareerBankPage() {
         <h1 className="text-2xl font-bold">Career Bank</h1>
         <div className="flex gap-2">
           <Link href="/skills"><Button variant="outline">Skills</Button></Link>
+          <Link href="/jobDescriptions"><Button variant="outline">Job Descriptions</Button></Link>
           <Link href="/careerEntries/new"><Button>Add Entry</Button></Link>
         </div>
       </div>

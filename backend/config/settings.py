@@ -117,6 +117,7 @@ DATABASES = {
     }
 }
 
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

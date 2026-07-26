@@ -69,3 +69,15 @@ def get_relevant_entries(user, jd_embedding, top_n=5):
         .annotate(distance=CosineDistance('embedding', jd_embedding))
         .order_by('distance')[:top_n]
     )
+
+def compute_ats_score(match_score: float, parseability_result: dict) -> dict:
+    """
+    Combines content match score (0-100) and parseability score (0-100)
+    into a single breakdown, not a flattened single number.
+    """
+    return {
+        "content_score": round(match_score, 1),
+        "parseability_score": parseability_result["score"],
+        "overall_score": round((match_score + parseability_result["score"]) / 2, 1),
+        "parseability_issues": parseability_result["issues"],
+    }

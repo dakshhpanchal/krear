@@ -17,9 +17,9 @@ class ResumeVersionSerializer(serializers.ModelSerializer):
         model = ResumeVersion
         fields = [
             'id', 'resume', 'version_number', 'content',
-            'diff_from_previous', 'created_at',
+            'pdf_file', 'diff_from_previous', 'created_at',
         ]
-        read_only_fields = ['id', 'version_number', 'diff_from_previous', 'created_at']
+        read_only_fields = ['id', 'version_number', 'pdf_file', 'diff_from_previous', 'created_at']
 
 
 class ResumeSerializer(serializers.ModelSerializer):
