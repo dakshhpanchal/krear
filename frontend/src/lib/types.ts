@@ -1,6 +1,27 @@
+export type CareerCategory =
+  | "project"
+  | "experience"
+  | "education"
+  | "achievement"
+  | "certification"
+  | "award"
+  | "leadership"
+  | "publication";
+
+export const CAREER_CATEGORIES: CareerCategory[] = [
+  "project",
+  "experience",
+  "education",
+  "achievement",
+  "certification",
+  "award",
+  "leadership",
+  "publication",
+];
+
 export interface CareerEntry {
   id: number;
-  category: string;
+  category: CareerCategory;
   title: string;
   description: string;
   tech_stack: string[];
@@ -8,17 +29,19 @@ export interface CareerEntry {
   tags: string[];
   duration_start: string | null;
   duration_end: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
+
+export type Proficiency = "beginner" | "intermediate" | "advanced" | "expert";
+
+export const PROFICIENCIES: Proficiency[] = ["beginner", "intermediate", "advanced", "expert"];
 
 export interface Skill {
   id: number;
   name: string;
   category: string;
-  proficiency: string;
-  created_at: string;
-  updated_at: string;
+  proficiency: Proficiency;
 }
 
 export interface JobDescription {
@@ -26,37 +49,83 @@ export interface JobDescription {
   raw_text: string;
   company: string;
   role_title: string;
-  parsed_requirements: {
-    required_skills?: string[];
-    preferred_skills?: string[];
-    seniority?: string;
-    role_type?: string;
-  } | null;
-  created_at: string;
-}
-
-export interface MatchScore {
-  overall_score: number;
-  matched_required: Record<string, string>;
-  missing_required: string[];
-  matched_preferred: Record<string, string>;
-  missing_preferred: string[];
+  parsed_requirements: Record<string, unknown> | null;
+  created_at?: string;
 }
 
 export interface Resume {
   id: number;
   title: string;
   job_description: number | null;
+  created_at?: string;
+}
+
+export interface ResumeSection {
+  heading: string;
+  bullets: string[];
 }
 
 export interface ResumeVersion {
   id: number;
+  resume: number;
   version_number: number;
-  content: {
-    projects?: { title: string; year: string; bullets: string[] }[];
-    experience?: { title: string; year: string; bullets: string[] }[];
-  };
+  content: { sections?: ResumeSection[] } & Record<string, unknown>;
+  diff_from_previous: unknown;
   pdf_file: string | null;
-  diff_from_previous: { compile_error?: string } | null;
+  created_at?: string;
+}
+
+export interface CoverLetter {
+  id: number;
+  job_description: number;
+  resume_version: number | null;
+  content: string;
+  created_at?: string;
+}
+
+export type ApplicationStatus =
+  | "wishlist"
+  | "applied"
+  | "oa"
+  | "interview"
+  | "offer"
+  | "rejected";
+
+export const APPLICATION_STATUSES: { id: ApplicationStatus; label: string }[] = [
+  { id: "wishlist", label: "Wishlist" },
+  { id: "applied", label: "Applied" },
+  { id: "oa", label: "Assessment" },
+  { id: "interview", label: "Interview" },
+  { id: "offer", label: "Offer" },
+  { id: "rejected", label: "Rejected" },
+];
+
+export interface Application {
+  id: number;
+  company: string;
+  role: string;
+  status: ApplicationStatus;
+  job_description: number | null;
+  resume_version: number | null;
+  cover_letter: number | null;
+  applied_date: string | null;
+  deadline: string | null;
+  recruiter_contact: string;
+  notes: string;
+  created_at?: string;
+}
+
+export interface ActivityLog {
+  id: number;
+  action: string;
+  entity_type: string;
+  entity_id: number;
   created_at: string;
+}
+
+export interface AtsScore {
+  score?: number;
+  matched_keywords?: string[];
+  missing_keywords?: string[];
+  [key: string]: unknown;
 }

@@ -1,72 +1,118 @@
-const API_BASE = 'http://localhost:8000/api';
+/**
+ * Thin typed client for the Krear Django REST backend.
+ * Base URL is configurable so the same build works against local + deployed API.
+ */
 
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('access_token');
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  };
+export const API_BASE = (
+  (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000"
+).replace(/\/$/, "");
+
+const ACCESS_KEY = "krear.access";
+const REFRESH_KEY = "krear.refresh";
+
+export const tokenStore = {
+  get access() {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(ACCESS_KEY);
+  },
+  get refresh() {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(REFRESH_KEY);
+  },
+  set(access: string, refresh?: string) {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(ACCESS_KEY, access);
+    if (refresh) window.localStorage.setItem(REFRESH_KEY, refresh);
+    window.dispatchEvent(new Event("krear:auth"));
+  },
+  clear() {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(ACCESS_KEY);
+    window.localStorage.removeItem(REFRESH_KEY);
+    window.dispatchEvent(new Event("krear:auth"));
+  },
+};
+
+export class ApiError extends Error {
+  status: number;
+  payload: unknown;
+  constructor(status: number, message: string, payload?: unknown) {
+    super(message);
+    this.status = status;
+    this.payload = payload;
+  }
 }
 
-async function refreshAccessToken(): Promise<boolean> {
-  const refresh = localStorage.getItem('refresh_token');
+async function refreshAccess(): Promise<boolean> {
+  const refresh = tokenStore.refresh;
   if (!refresh) return false;
-
-  const res = await fetch(`${API_BASE}/token/refresh/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch(`${API_BASE}/api/token/refresh/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh }),
   });
-
   if (!res.ok) return false;
-
-  const data = await res.json();
-  localStorage.setItem('access_token', data.access);
+  const data = (await res.json()) as { access: string };
+  tokenStore.set(data.access);
   return true;
 }
 
-async function apiFetch(path: string, options: RequestInit): Promise<Response> {
-  let res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: { ...getAuthHeaders(), ...options.headers },
-  });
+export async function apiFetch<T = unknown>(
+  path: string,
+  init: RequestInit & { retry?: boolean } = {},
+): Promise<T> {
+  const { retry = true, ...rest } = init;
+  const headers = new Headers(rest.headers);
+  if (!(rest.body instanceof FormData) && rest.body) {
+    headers.set("Content-Type", "application/json");
+  }
+  const access = tokenStore.access;
+  if (access) headers.set("Authorization", `Bearer ${access}`);
 
-  if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      res = await fetch(`${API_BASE}${path}`, {
-        ...options,
-        headers: { ...getAuthHeaders(), ...options.headers },
-      });
-    } else {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      window.location.href = '/login';
-    }
+  const res = await fetch(`${API_BASE}${path}`, { ...rest, headers });
+
+  if (res.status === 401 && retry && (await refreshAccess())) {
+    return apiFetch<T>(path, { ...init, retry: false });
   }
 
-  return res;
+  if (!res.ok) {
+    let payload: unknown = null;
+    let message = `Request failed (${res.status})`;
+    try {
+      payload = await res.json();
+      const detail = (payload as { detail?: string })?.detail;
+      if (detail) message = detail;
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new ApiError(res.status, message, payload);
+  }
+
+  if (res.status === 204) return undefined as T;
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
-export async function apiGet(path: string) {
-  const res = await apiFetch(path, { method: 'GET' });
-  if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
-  return res.json();
+export const api = {
+  get: <T>(path: string) => apiFetch<T>(path),
+  post: <T>(path: string, body?: unknown) =>
+    apiFetch<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
+  patch: <T>(path: string, body: unknown) =>
+    apiFetch<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+  put: <T>(path: string, body: unknown) =>
+    apiFetch<T>(path, { method: "PUT", body: JSON.stringify(body) }),
+  delete: <T>(path: string) => apiFetch<T>(path, { method: "DELETE" }),
+};
+
+/** DRF list endpoints may or may not be paginated — normalise both shapes. */
+export function unwrapList<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === "object" && Array.isArray((data as { results?: T[] }).results)) {
+    return (data as { results: T[] }).results;
+  }
+  return [];
 }
 
-export async function apiPost(path: string, body: unknown) {
-  const res = await apiFetch(path, { method: 'POST', body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
-  return res.json();
-}
-
-export async function apiPatch(path: string, body: unknown) {
-  const res = await apiFetch(path, { method: 'PATCH', body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`);
-  return res.json();
-}
-
-export async function apiDelete(path: string) {
-  const res = await apiFetch(path, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
+export async function getList<T>(path: string): Promise<T[]> {
+  return unwrapList<T>(await api.get<unknown>(path));
 }
