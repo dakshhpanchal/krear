@@ -15,12 +15,12 @@ import { APPLICATION_STATUSES } from "@/lib/types";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Krear" },
+      { title: "Dashboard | Krear" },
       {
         name: "description",
         content: "Pipeline health, resume versions and recent activity across your job search.",
       },
-      { property: "og:title", content: "Dashboard — Krear" },
+      { property: "og:title", content: "Dashboard | Krear" },
       {
         property: "og:description",
         content: "Pipeline health, resume versions and recent activity across your job search.",
@@ -73,7 +73,7 @@ function Dashboard() {
       )}
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Career entries" value={loading ? "—" : (entries.data?.length ?? 0)} to="/career" />
+        <Stat label="Career entries" value={loading ? "-" : (entries.data?.length ?? 0)} to="/career" />
         <Stat label="Job descriptions" value={jobs.data?.length ?? 0} to="/jobs" />
         <Stat label="Resumes" value={resumes.data?.length ?? 0} to="/resumes" />
         <Stat label="Applications" value={applications.length} to="/applications" />

@@ -12,13 +12,13 @@ import type { CareerEntry, Skill } from "@/lib/types";
 export const Route = createFileRoute("/career")({
   head: () => ({
     meta: [
-      { title: "Career graph — Krear" },
+      { title: "Career graph | Krear" },
       {
         name: "description",
         content:
-          "Your projects, experience, education and achievements — drag entries between categories and manage skills.",
+          "Your projects, experience, education and achievements, drag entries between categories and manage skills.",
       },
-      { property: "og:title", content: "Career graph — Krear" },
+      { property: "og:title", content: "Career graph | Krear" },
       {
         property: "og:description",
         content: "Drag career entries between categories and keep your skill matrix current.",

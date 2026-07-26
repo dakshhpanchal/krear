@@ -13,13 +13,13 @@ import { ArrowCircle, MonoLabel, SectionMarker, Tag } from "@/components/krear/p
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Krear — AI resume tailoring & application tracker" },
+      { title: "Krear | AI resume tailoring & application tracker" },
       {
         name: "description",
         content:
           "Turn one career history into job-specific, ATS-scored resumes. Draft cover letters, version every draft, and drag applications from wishlist to offer.",
       },
-      { property: "og:title", content: "Krear — AI resume tailoring & application tracker" },
+      { property: "og:title", content: "Krear | AI resume tailoring & application tracker" },
       {
         property: "og:description",
         content:
@@ -34,7 +34,7 @@ const CAPABILITIES = [
   {
     icon: Layers,
     title: "Career graph",
-    body: "Projects, experience, education and achievements stored once — embedded for semantic retrieval.",
+    body: "Projects, experience, education and achievements stored once, embedded for semantic retrieval.",
   },
   {
     icon: Sparkles,
@@ -68,17 +68,27 @@ function Landing() {
     <div>
       {/* Hero */}
       <section className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:pt-20">
-        <div className="rise">
-          <h1 className="display-xl">
+        <div className="rise flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+          <h1 className="display-xl flex-1">
             <span className="block">Resume</span>
             <span className="block text-right md:pr-4">Engine</span>
           </h1>
+          <div className="flex md:justify-end pb-2">
+            <div className="relative group">
+              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-neutral-200 to-neutral-300 opacity-30 blur-lg transition duration-500 group-hover:opacity-50"></div>
+              <img 
+                src="/icon.svg" 
+                className="relative size-28 md:size-36 transition-transform duration-300 hover:scale-105" 
+                alt="Krear Logo" 
+              />
+            </div>
+          </div>
         </div>
 
         <div className="mt-10 grid gap-10 md:grid-cols-[minmax(0,20rem)_1fr] md:items-end">
           <p className="max-w-sm text-lg leading-relaxed">
             One career history in.{" "}
-            <em className="font-semibold">Job-specific, ATS-scored resumes</em> out — versioned,
+            <em className="font-semibold">Job-specific, <span className="whitespace-nowrap">ATS-scored</span> resumes</em> out, versioned,
             diffed and tracked all the way to the offer.
           </p>
           <div className="flex flex-wrap items-center justify-start gap-3 md:justify-end">
@@ -138,7 +148,7 @@ function Landing() {
               <div className="mt-6 h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div className="h-full w-[78%] rounded-full bg-primary" />
               </div>
-              <p className="mt-2 font-mono text-xs text-muted-foreground">78 / 100 — sample</p>
+              <p className="mt-2 font-mono text-xs text-muted-foreground">78 / 100 (sample)</p>
             </div>
             <div className="paper-card p-8">
               <h3 className="font-mono text-2xl">Pipeline</h3>

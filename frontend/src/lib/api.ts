@@ -104,7 +104,7 @@ export const api = {
   delete: <T>(path: string) => apiFetch<T>(path, { method: "DELETE" }),
 };
 
-/** DRF list endpoints may or may not be paginated — normalise both shapes. */
+/** DRF list endpoints may or may not be paginated - normalise both shapes. */
 export function unwrapList<T>(data: unknown): T[] {
   if (Array.isArray(data)) return data as T[];
   if (data && typeof data === "object" && Array.isArray((data as { results?: T[] }).results)) {

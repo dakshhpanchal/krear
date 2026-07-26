@@ -13,13 +13,13 @@ import type { AtsScore, Resume, ResumeSection, ResumeVersion } from "@/lib/types
 export const Route = createFileRoute("/resumes/$resumeId")({
   head: () => ({
     meta: [
-      { title: "Resume versions — Krear" },
+      { title: "Resume versions | Krear" },
       {
         name: "description",
         content:
           "Compare resume versions, reorder bullets with drag and drop, check the ATS score and download the PDF.",
       },
-      { property: "og:title", content: "Resume versions — Krear" },
+      { property: "og:title", content: "Resume versions | Krear" },
       {
         property: "og:description",
         content: "Reorder bullets by dragging, inspect ATS scores and download the compiled PDF.",
@@ -101,7 +101,7 @@ function ResumeDetail() {
       <PageHeader
         eyebrow="Resume"
         title={resume.data?.title ?? "Loading…"}
-        description="Drag section headings or individual bullets to reorder — changes save straight to the version."
+        description="Drag section headings or individual bullets to reorder; changes save straight to the version."
         actions={
           <>
             <Link to="/resumes" className="pill-outline px-6 py-3 text-sm">
@@ -187,7 +187,7 @@ function ResumeDetail() {
           <section className="ink-card p-7">
             <MonoLabel className="text-primary-foreground/60">ATS score</MonoLabel>
             <p className="mt-3 font-mono text-6xl tracking-tighter">
-              {Number.isFinite(score) ? Math.round(score) : "—"}
+              {Number.isFinite(score) ? Math.round(score) : "-"}
             </p>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-primary-foreground/20">
               <div

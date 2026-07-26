@@ -11,13 +11,13 @@ import type { Application, ApplicationStatus } from "@/lib/types";
 export const Route = createFileRoute("/applications")({
   head: () => ({
     meta: [
-      { title: "Application pipeline — Krear" },
+      { title: "Application pipeline | Krear" },
       {
         name: "description",
         content:
           "A drag-and-drop kanban board tracking every application from wishlist through assessment, interview and offer.",
       },
-      { property: "og:title", content: "Application pipeline — Krear" },
+      { property: "og:title", content: "Application pipeline | Krear" },
       {
         property: "og:description",
         content: "Drag applications between stages; the API updates instantly.",

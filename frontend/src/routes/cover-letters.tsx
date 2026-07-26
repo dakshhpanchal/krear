@@ -15,12 +15,12 @@ import type { CoverLetter } from "@/lib/types";
 export const Route = createFileRoute("/cover-letters")({
   head: () => ({
     meta: [
-      { title: "Cover letters — Krear" },
+      { title: "Cover letters | Krear" },
       {
         name: "description",
         content: "Cover letters written from the same job description and resume version you sent.",
       },
-      { property: "og:title", content: "Cover letters — Krear" },
+      { property: "og:title", content: "Cover letters | Krear" },
       {
         property: "og:description",
         content: "Cover letters tied to the exact job description and resume version.",

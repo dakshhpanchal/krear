@@ -1,1 +1,124 @@
-# krear
+# Krear: AI-Powered Career Intelligence Platform
+
+Krear helps you manage a structured "Career Bank" of your projects, experience, and
+skills, then uses retrieval-augmented generation to tailor resumes to specific job
+descriptions — complete with an ATS parseability score before you send anything out.
+
+## What it does
+
+1. **Career Bank** — a structured database of your projects, experience, and skills
+   (not a blob of resume text) that acts as the single source of truth for everything
+   downstream.
+2. **JD Analyzer** — paste a job description, get back structured requirements
+   (required/preferred skills, seniority, role type) extracted by an LLM, plus a
+   match score against your Career Bank and a list of missing keywords.
+3. **AI Resume Generator** — given a JD, retrieves your most relevant Career Bank
+   entries via vector similarity search, then generates tailored resume content and
+   compiles it into a polished PDF via LaTeX.
+4. **ATS Score Checker** — re-parses the compiled PDF the way an ATS system would,
+   checking for content match, font/glyph issues, and section-order problems that a
+   human eye won't catch but a resume parser will.
+
+## Stack
+
+**Backend:** Django + Django REST Framework + PostgreSQL + `pgvector` + Celery/Redis
+**AI:** Groq (Llama 3.3 70B) for JD parsing and resume generation; `bge-small-en-v1.5`
+(local, via `sentence-transformers`) for embeddings
+**PDF pipeline:** Jinja2 → LaTeX → Tectonic
+**Frontend:** React + Vite + TanStack Router/Query + Tailwind + shadcn/ui
+
+## Architecture
+
+```
+┌─────────────┐      ┌──────────────────┐      ┌─────────────┐
+│   Frontend   │ ───▶ │   Django + DRF    │ ───▶ │  PostgreSQL  │
+│ (React/Vite) │      │   (JWT auth)      │      │  + pgvector  │
+└─────────────┘      └──────────────────┘      └─────────────┘
+                              │
+                              ▼
+                      ┌──────────────┐
+                      │ Celery + Redis │
+                      │ (async tasks)  │
+                      └──────────────┘
+                              │
+                ┌─────────────┼─────────────┐
+                ▼             ▼             ▼
+          Embeddings     JD Parsing    Resume Gen
+        (bge-small,      (Groq/Llama)  + LaTeX/PDF
+         local, CPU)                   compilation
+```
+
+Embeddings are generated locally (no external API dependency for this step); JD
+parsing and resume tailoring go through Groq's hosted Llama 3.3 70B.
+
+## Project structure
+
+```
+krear/
+  backend/     Django + DRF API, Celery workers, LaTeX/ATS pipeline
+  frontend/    React + Vite SPA
+```
+
+## Local development
+
+### Prerequisites
+- Python 3.12+
+- Node 20+
+- Docker (for Postgres + Redis)
+- Tectonic (or another LaTeX distribution with `latexmk`) on your PATH
+
+### Backend
+```bash
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+
+docker run -d --name krear-db -p 5432:5432 pgvector/pgvector:pg16
+docker run -d --name krear-redis -p 6379:6379 redis:7-alpine
+
+python manage.py migrate
+python manage.py seed_career_data   # optional: sample data
+python manage.py runserver
+```
+
+In a separate terminal, start the Celery worker (required for embeddings, JD
+parsing, and resume generation — these all run async):
+```bash
+cd backend && celery -A config worker -l info
+```
+
+Required environment variables (`.env`, not committed):
+```
+SECRET_KEY=...
+GROQ_API_KEY=...
+DEBUG=True
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Set `VITE_API_URL` in `.env.local` if the backend isn't on `http://localhost:8000`.
+
+## Deployment
+
+- **Backend** — containerized via `backend/Dockerfile` (includes Tectonic and a
+  pre-downloaded embedding model). Deployed as two services from the same image:
+  a web process (`entrypoint.sh` → migrate → collectstatic → gunicorn) and a
+  Celery worker process. Requires Postgres (with `pgvector` enabled) and Redis.
+- **Frontend** — static Vite build (`npm run build` → `dist/`), deployed behind
+  a rewrite rule that funnels all routes to `index.html` (see `frontend/vercel.json`)
+  since routing is entirely client-side.
+
+## Project status
+
+Fully built and validated end-to-end: Career Bank CRUD, embeddings pipeline, JD
+analysis with match scoring, AI resume generation with LaTeX/PDF compilation, and
+ATS parseability scoring. Application tracker and cover letter generation in
+progress.
+
+## License
+
+Personal/portfolio project — not currently licensed for reuse.

@@ -8,9 +8,9 @@ import { MonoLabel } from "@/components/krear/primitives";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — Krear" },
+      { title: "Sign in | Krear" },
       { name: "description", content: "Sign in to your Krear career workspace." },
-      { property: "og:title", content: "Sign in — Krear" },
+      { property: "og:title", content: "Sign in | Krear" },
       { property: "og:description", content: "Sign in to your Krear career workspace." },
     ],
   }),
@@ -44,7 +44,7 @@ function LoginPage() {
         <h1 className="display-lg mt-6">Sign in</h1>
         <p className="mt-6 max-w-md text-muted-foreground">
           Krear authenticates against your Django backend with JWT. The workspace is talking to{" "}
-          <span className="font-mono text-foreground">{API_BASE}</span> — set{" "}
+          <span className="font-mono text-foreground">{API_BASE}</span>. Set{" "}
           <span className="font-mono text-foreground">VITE_API_URL</span> to point at a deployed
           API.
         </p>

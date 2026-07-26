@@ -8,12 +8,12 @@ import type { CareerEntry, JobDescription } from "@/lib/types";
 export const Route = createFileRoute("/jobs/$jobId")({
   head: () => ({
     meta: [
-      { title: "Job detail — Krear" },
+      { title: "Job detail | Krear" },
       {
         name: "description",
         content: "Parsed requirements, match score and the career entries most relevant to this posting.",
       },
-      { property: "og:title", content: "Job detail — Krear" },
+      { property: "og:title", content: "Job detail | Krear" },
       {
         property: "og:description",
         content: "Parsed requirements, match score and relevant career entries for this posting.",
@@ -74,7 +74,7 @@ function JobDetail() {
           <section className="ink-card p-8">
             <MonoLabel className="text-primary-foreground/60">Match score</MonoLabel>
             <p className="mt-4 font-mono text-6xl tracking-tighter">
-              {Number.isFinite(score) ? Math.round(score) : "—"}
+              {Number.isFinite(score) ? Math.round(score) : "-"}
             </p>
             <p className="mt-2 text-sm text-primary-foreground/70">
               {match.isError

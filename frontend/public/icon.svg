@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    rect {
+      fill: #f4f2ed;
+      stroke: #2d2d2d;
+    }
+    text {
+      fill: #2d2d2d;
+    }
+    @media (prefers-color-scheme: dark) {
+      rect {
+        fill: #191919;
+        stroke: #333333;
+      }
+      text {
+        fill: #f6f6f6;
+      }
+    }
+  </style>
+  <rect x="6" y="6" width="148" height="148" rx="32" stroke-width="8"/>
+  <text x="80" y="112" font-family="JetBrains Mono, ui-monospace, monospace" font-size="90" font-weight="700" text-anchor="middle">k_</text>
+</svg>

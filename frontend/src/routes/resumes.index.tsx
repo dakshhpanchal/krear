@@ -15,12 +15,12 @@ import type { Resume } from "@/lib/types";
 export const Route = createFileRoute("/resumes/")({
   head: () => ({
     meta: [
-      { title: "Resumes — Krear" },
+      { title: "Resumes | Krear" },
       {
         name: "description",
         content: "Generate, version and score resumes tailored to a specific job description.",
       },
-      { property: "og:title", content: "Resumes — Krear" },
+      { property: "og:title", content: "Resumes | Krear" },
       {
         property: "og:description",
         content: "Generate, version and score resumes tailored to a specific job description.",
@@ -122,7 +122,7 @@ function ResumesPage() {
           <MonoLabel>New resume</MonoLabel>
           <input
             required
-            placeholder="Title, e.g. Backend — Stripe"
+            placeholder="Title, e.g. Backend - Stripe"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             className="rounded-2xl border border-border bg-background px-4 py-3 font-mono text-sm"

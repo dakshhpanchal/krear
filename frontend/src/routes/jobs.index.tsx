@@ -9,13 +9,13 @@ import type { JobDescription } from "@/lib/types";
 export const Route = createFileRoute("/jobs/")({
   head: () => ({
     meta: [
-      { title: "Job descriptions — Krear" },
+      { title: "Job descriptions | Krear" },
       {
         name: "description",
         content:
           "Paste job postings, parse their requirements and see which career entries match best.",
       },
-      { property: "og:title", content: "Job descriptions — Krear" },
+      { property: "og:title", content: "Job descriptions | Krear" },
       {
         property: "og:description",
         content: "Paste a posting and let Krear surface the most relevant career entries.",
