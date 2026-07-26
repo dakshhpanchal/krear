@@ -17,6 +17,7 @@ cuda-bindings==13.3.1
 cuda-pathfinder==1.6.0
 cuda-toolkit==13.0.3.0
 distro==1.9.0
+dj-database-url==3.1.2
 Django==6.0.7
 django-cors-headers==4.9.0
 django_celery_results==2.6.0
@@ -101,3 +102,4 @@ tzdata==2026.3
 tzlocal==5.4.4
 vine==5.1.0
 wcwidth==0.8.2
+whitenoise==6.12.0
