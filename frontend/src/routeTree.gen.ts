@@ -15,6 +15,7 @@ import { Route as CareerRouteImport } from './routes/career'
 import { Route as CoverLettersRouteImport } from './routes/cover-letters'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as JobsIndexRouteImport } from './routes/jobs.index'
 import { Route as JobsJobIdRouteImport } from './routes/jobs.$jobId'
@@ -51,6 +52,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/cover-letters': typeof CoverLettersRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
   '/resumes/$resumeId': typeof ResumesResumeIdRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/cover-letters': typeof CoverLettersRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
   '/resumes/$resumeId': typeof ResumesResumeIdRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/cover-letters': typeof CoverLettersRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
   '/resumes/$resumeId': typeof ResumesResumeIdRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/cover-letters'
     | '/dashboard'
     | '/login'
+    | '/signup'
     | '/sitemap.xml'
     | '/jobs/$jobId'
     | '/resumes/$resumeId'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/cover-letters'
     | '/dashboard'
     | '/login'
+    | '/signup'
     | '/sitemap.xml'
     | '/jobs/$jobId'
     | '/resumes/$resumeId'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/cover-letters'
     | '/dashboard'
     | '/login'
+    | '/signup'
     | '/sitemap.xml'
     | '/jobs/$jobId'
     | '/resumes/$resumeId'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   CoverLettersRoute: typeof CoverLettersRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   JobsJobIdRoute: typeof JobsJobIdRoute
   ResumesResumeIdRoute: typeof ResumesResumeIdRoute
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoverLettersRoute: CoverLettersRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   JobsJobIdRoute: JobsJobIdRoute,
   ResumesResumeIdRoute: ResumesResumeIdRoute,

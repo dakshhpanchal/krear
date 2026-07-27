@@ -5,33 +5,31 @@ import { API_BASE } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { MonoLabel } from "@/components/krear/primitives";
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Sign in | Krear" },
-      { name: "description", content: "Sign in to your Krear career workspace." },
-      { property: "og:title", content: "Sign in | Krear" },
-      { property: "og:description", content: "Sign in to your Krear career workspace." },
+      { title: "Sign up | Krear" },
+      { name: "description", content: "Create your Krear career workspace." },
     ],
   }),
-  component: LoginPage,
+  component: SignupPage,
 });
 
-function LoginPage() {
-  const { login, isAuthenticated, logout, username } = useAuth();
+function SignupPage() {
+  const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ username: "", email: "", password: "" });
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
-      await login(form.username, form.password);
-      toast.success("Signed in");
+      await register(form.username, form.email, form.password);
+      toast.success("Account created");
       navigate({ to: "/dashboard" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Sign in failed");
+      toast.error(err instanceof Error ? err.message : "Sign up failed");
     } finally {
       setBusy(false);
     }
@@ -41,17 +39,12 @@ function LoginPage() {
     <div className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center">
       <div className="rise">
         <MonoLabel>Access</MonoLabel>
-        <h1 className="display-lg mt-6">Sign in</h1>
+        <h1 className="display-lg mt-6">Sign up</h1>
         <p className="mt-6 max-w-md text-muted-foreground">
-          Krear authenticates against your Django backend with JWT. The workspace is talking to{" "}
-          <span className="font-mono text-foreground">{API_BASE}</span>. Set{" "}
-          <span className="font-mono text-foreground">VITE_API_URL</span> to point at a deployed
-          API.
-        </p>
-        <p className="mt-4 max-w-md text-muted-foreground">
-          New here?{" "}
-          <Link to="/signup" className="underline underline-offset-4">
-            Create an account
+          Create an account on <span className="font-mono text-foreground">{API_BASE}</span>.
+          Already have one?{" "}
+          <Link to="/login" className="underline underline-offset-4">
+            Sign in
           </Link>
           .
         </p>
@@ -61,20 +54,12 @@ function LoginPage() {
         {isAuthenticated ? (
           <div className="flex flex-col items-start gap-5">
             <h2 className="font-mono text-2xl">Already signed in</h2>
-            <p className="text-sm text-muted-foreground">
-              Session active {username ? `as ${username}` : ""}.
-            </p>
-            <div className="flex gap-3">
-              <button
-                className="rounded-full bg-primary px-6 py-3 font-serif italic text-primary-foreground"
-                onClick={() => navigate({ to: "/dashboard" })}
-              >
-                Go to dashboard
-              </button>
-              <button className="pill-outline px-6 py-3 text-sm" onClick={logout}>
-                Sign out
-              </button>
-            </div>
+            <button
+              className="rounded-full bg-primary px-6 py-3 font-serif italic text-primary-foreground"
+              onClick={() => navigate({ to: "/dashboard" })}
+            >
+              Go to dashboard
+            </button>
           </div>
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-5">
@@ -89,11 +74,21 @@ function LoginPage() {
               />
             </label>
             <label className="flex flex-col gap-2">
+              <MonoLabel>Email</MonoLabel>
+              <input
+                type="email"
+                autoComplete="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="rounded-2xl border border-border bg-background px-4 py-3 font-mono text-sm outline-none focus:border-foreground"
+              />
+            </label>
+            <label className="flex flex-col gap-2">
               <MonoLabel>Password</MonoLabel>
               <input
                 required
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="rounded-2xl border border-border bg-background px-4 py-3 font-mono text-sm outline-none focus:border-foreground"
@@ -104,7 +99,7 @@ function LoginPage() {
               disabled={busy}
               className="mt-2 rounded-full bg-primary px-7 py-3 font-serif italic text-primary-foreground disabled:opacity-50"
             >
-              {busy ? "Signing in…" : "Sign in"}
+              {busy ? "Creating account…" : "Sign up"}
             </button>
           </form>
         )}

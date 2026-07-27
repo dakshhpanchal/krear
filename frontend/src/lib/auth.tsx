@@ -7,6 +7,7 @@ interface AuthState {
   ready: boolean;
   username: string | null;
   login: (username: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -53,6 +54,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenStore.set(data.access, data.refresh);
   }, []);
 
+  const register = useCallback(async (username: string, email: string, password: string) => {
+    const res = await fetch(`${API_BASE}/api/register/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, password }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const firstError = Object.values(body)[0];
+      const message = Array.isArray(firstError) ? firstError[0] : `Sign up failed (${res.status}).`;
+      throw new Error(message as string);
+    }
+    await login(username, password);
+  }, [login]);
+
   const logout = useCallback(() => tokenStore.clear(), []);
 
   const value = useMemo<AuthState>(
@@ -61,9 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ready,
       username: decodeUsername(token),
       login,
+      register,
       logout,
     }),
-    [token, ready, login, logout],
+    [token, ready, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
