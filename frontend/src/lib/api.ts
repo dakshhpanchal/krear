@@ -127,7 +127,12 @@ export async function getList<T>(path: string): Promise<T[]> {
       typeof (data as { next?: string | null }).next === "string"
     ) {
       const nextUrl = (data as { next: string }).next;
-      nextPath = nextUrl.startsWith(API_BASE) ? nextUrl.slice(API_BASE.length) : nextUrl;
+      try {
+        const parsed = new URL(nextUrl, API_BASE);
+        nextPath = parsed.pathname + parsed.search;
+      } catch {
+        nextPath = null;
+      }
     } else {
       nextPath = null;
     }
