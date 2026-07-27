@@ -114,5 +114,24 @@ export function unwrapList<T>(data: unknown): T[] {
 }
 
 export async function getList<T>(path: string): Promise<T[]> {
-  return unwrapList<T>(await api.get<unknown>(path));
+  const all: T[] = [];
+  let nextPath: string | null = path;
+
+  while (nextPath) {
+    const data = await api.get<unknown>(nextPath);
+    all.push(...unwrapList<T>(data));
+
+    if (
+      data &&
+      typeof data === "object" &&
+      typeof (data as { next?: string | null }).next === "string"
+    ) {
+      const nextUrl = (data as { next: string }).next;
+      nextPath = nextUrl.startsWith(API_BASE) ? nextUrl.slice(API_BASE.length) : nextUrl;
+    } else {
+      nextPath = null;
+    }
+  }
+
+  return all;
 }
