@@ -1,10 +1,26 @@
+import os
+import requests
 from celery import shared_task
-from functools import lru_cache
 
-@lru_cache(maxsize=1)
-def get_model():
-    from sentence_transformers import SentenceTransformer
-    return SentenceTransformer('BAAI/bge-small-en-v1.5')
+HF_TOKEN = os.environ.get("HF_TOKEN")
+HF_EMBEDDING_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/BAAI/bge-small-en-v1.5"
+
+
+def get_embedding(text: str) -> list[float]:
+    res = requests.post(
+        HF_EMBEDDING_URL,
+        headers={"Authorization": f"Bearer {HF_TOKEN}"},
+        json={"inputs": text, "options": {"wait_for_model": True}},
+        timeout=30,
+    )
+    res.raise_for_status()
+    embedding = res.json()
+    # HF's feature-extraction endpoint sometimes nests the result depending
+    # on the model/pipeline version — normalize to a flat list of floats.
+    if isinstance(embedding, list) and embedding and isinstance(embedding[0], list):
+        embedding = embedding[0]
+    return embedding
+
 
 @shared_task
 def generate_embedding_for_entry(entry_id):
@@ -15,7 +31,6 @@ def generate_embedding_for_entry(entry_id):
         return
 
     text = f"{entry.title}. {entry.description}. Tags: {', '.join(entry.tags)}"
-    model = get_model()
-    embedding = model.encode(text, normalize_embeddings=True)
-    entry.embedding = embedding.tolist()
+    embedding = get_embedding(text)
+    entry.embedding = embedding
     entry.save(update_fields=['embedding'])

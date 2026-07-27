@@ -1,7 +1,7 @@
 import os
 import json
 from celery import shared_task
-from career.tasks import get_model
+from career.tasks import get_embedding
 from groq import Groq
 from django.core.files.base import ContentFile
 
@@ -13,9 +13,8 @@ def generate_embedding_for_jd(jd_id):
     except JobDescription.DoesNotExist:
         return
 
-    model = get_model()
-    embedding = model.encode(jd.raw_text, normalize_embeddings=True)
-    jd.embedding = embedding.tolist()
+    embedding = get_embedding(jd.raw_text)
+    jd.embedding = embedding
     jd.save(update_fields=['embedding'])
 
 EXTRACTION_PROMPT = """You are a job description parser. Given a job description, \

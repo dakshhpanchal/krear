@@ -15,8 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn dj-database-url
 
 COPY . .
 
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-small-en-v1.5')"
-
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
