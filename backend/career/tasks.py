@@ -3,8 +3,7 @@ import requests
 from celery import shared_task
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
-HF_EMBEDDING_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/BAAI/bge-small-en-v1.5"
-
+HF_EMBEDDING_URL = "https://router.huggingface.co/hf-inference/models/BAAI/bge-small-en-v1.5/pipeline/feature-extraction"
 
 def get_embedding(text: str) -> list[float]:
     res = requests.post(

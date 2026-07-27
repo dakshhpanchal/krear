@@ -46,24 +46,20 @@ def compile_latex_to_pdf(tex_content: str) -> bytes:
     with tempfile.TemporaryDirectory() as tmpdir:
         tex_path = os.path.join(tmpdir, 'resume.tex')
         pdf_path = os.path.join(tmpdir, 'resume.pdf')
-
         with open(tex_path, 'w') as f:
             f.write(tex_content)
-
         result = subprocess.run(
             [
-                'latexmk', '-pdf', '-interaction=nonstopmode',
-                '-output-directory=' + tmpdir, tex_path,
+                'tectonic', '-X', 'compile',
+                '--outdir', tmpdir, tex_path,
             ],
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=180,
         )
-
         if result.returncode != 0 or not os.path.exists(pdf_path):
             raise RuntimeError(
-                f"LaTeX compilation failed:\n{result.stdout[-2000:]}"
+                f"LaTeX compilation failed:\n{result.stderr[-2000:]}"
             )
-
         with open(pdf_path, 'rb') as f:
             return f.read()
