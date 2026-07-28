@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import viewsets
 from .models import JobDescription, Resume, ResumeVersion, CoverLetter
 from .serializers import (
@@ -10,6 +11,7 @@ from career.serializers import CareerEntrySerializer
 from career.services import get_relevant_entries, compute_match_score, compute_ats_score
 from .ats import check_parseability
 from .tasks import generate_resume
+
 
 class ResumeViewSet(viewsets.ModelViewSet):
     serializer_class = ResumeSerializer
@@ -28,27 +30,38 @@ class ResumeViewSet(viewsets.ModelViewSet):
         generate_resume.delay(resume.id, resume.job_description_id)
         return Response({"status": "generation started"}, status=202)
 
+
 class ResumeVersionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ResumeVersionSerializer
 
     def get_queryset(self):
-            qs = ResumeVersion.objects.filter(resume__user=self.request.user)
-            resume_id = self.request.query_params.get('resume')
-            if resume_id:
-                qs = qs.filter(resume_id=resume_id)
-            return qs.order_by('-version_number')
+        qs = ResumeVersion.objects.filter(resume__user=self.request.user)
+        resume_id = self.request.query_params.get('resume')
+        if resume_id:
+            qs = qs.filter(resume_id=resume_id)
+        return qs.order_by('-version_number')
+
+    @action(detail=True, methods=['get'])
+    def download(self, request, pk=None):
+        version = self.get_object()
+        if not version.pdf_data:
+            return Response({"error": "This resume version has no compiled PDF yet."}, status=404)
+
+        response = HttpResponse(bytes(version.pdf_data), content_type='application/pdf')
+        filename = version.pdf_filename or f"resume_v{version.version_number}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
 
     @action(detail=True, methods=['get'])
     def ats_score(self, request, pk=None):
         version = self.get_object()
-        if not version.pdf_file:
+        if not version.pdf_data:
             return Response(
                 {"error": "This resume version has no compiled PDF yet"},
                 status=400,
             )
 
-        with version.pdf_file.open('rb') as f:
-            pdf_bytes = f.read()
+        pdf_bytes = bytes(version.pdf_data)
 
         expected_sections = ["Education", "Personal Projects", "Experience", "Technical Skills"]
         parseability_result = check_parseability(pdf_bytes, expected_sections)
@@ -69,6 +82,7 @@ class ResumeVersionViewSet(viewsets.ReadOnlyModelViewSet):
         breakdown['missing_preferred'] = match_result['missing_preferred']
         return Response(breakdown)
 
+
 class CoverLetterViewSet(viewsets.ModelViewSet):
     serializer_class = CoverLetterSerializer
 
@@ -77,6 +91,7 @@ class CoverLetterViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
 
 class JobDescriptionViewSet(viewsets.ModelViewSet):
     serializer_class = JobDescriptionSerializer
@@ -93,7 +108,7 @@ class JobDescriptionViewSet(viewsets.ModelViewSet):
         entries = get_relevant_entries(request.user, jd.embedding, top_n=5)
         serializer = CareerEntrySerializer(entries, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['get'])
     def match_score(self, request, pk=None):
         jd = self.get_object()

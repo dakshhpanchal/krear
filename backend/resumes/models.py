@@ -32,7 +32,12 @@ class ResumeVersion(TimestampedModel):
     version_number = models.PositiveIntegerField()
     content = models.JSONField()                       # structured resume sections/bullets
     diff_from_previous = models.JSONField(null=True, blank=True)
-    pdf_file = models.FileField(upload_to='resumes/', null=True, blank=True)
+
+    # PDF stored directly in Postgres (Neon) instead of local disk — Render's
+    # free-tier filesystem is ephemeral and resets on every container restart,
+    # which was silently losing every generated PDF within minutes.
+    pdf_data = models.BinaryField(null=True, blank=True)
+    pdf_filename = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         ordering = ['-version_number']

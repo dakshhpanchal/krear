@@ -13,13 +13,21 @@ class JobDescriptionSerializer(serializers.ModelSerializer):
 
 
 class ResumeVersionSerializer(serializers.ModelSerializer):
+    has_pdf = serializers.SerializerMethodField()
+
     class Meta:
         model = ResumeVersion
         fields = [
             'id', 'resume', 'version_number', 'content',
-            'pdf_file', 'diff_from_previous', 'created_at',
+            'has_pdf', 'pdf_filename', 'diff_from_previous', 'created_at',
         ]
-        read_only_fields = ['id', 'version_number', 'pdf_file', 'diff_from_previous', 'created_at']
+        read_only_fields = [
+            'id', 'version_number', 'has_pdf', 'pdf_filename',
+            'diff_from_previous', 'created_at',
+        ]
+
+    def get_has_pdf(self, obj):
+        return bool(obj.pdf_data)
 
 
 class ResumeSerializer(serializers.ModelSerializer):

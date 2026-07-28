@@ -3,7 +3,6 @@ import json
 from celery import shared_task
 from career.tasks import get_embedding
 from groq import Groq
-from django.core.files.base import ContentFile
 
 @shared_task
 def generate_embedding_for_jd(jd_id):
@@ -167,4 +166,6 @@ def compile_resume_pdf(resume_version_id):
         return
 
     filename = f"resume_v{version.version_number}.pdf"
-    version.pdf_file.save(filename, ContentFile(pdf_bytes), save=True)
+    version.pdf_data = pdf_bytes
+    version.pdf_filename = filename
+    version.save(update_fields=['pdf_data', 'pdf_filename'])
