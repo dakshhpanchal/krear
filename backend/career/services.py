@@ -58,17 +58,28 @@ def compute_match_score(user, jd):
         'missing_preferred': sorted(missing_preferred),
     }
 
-def get_relevant_entries(user, jd_embedding, top_n=5):
-
+def get_relevant_entries(user, jd_embedding, top_n=5, top_n_projects=5):
     if jd_embedding is None:
         return CareerEntry.objects.none()
 
-    return (
-        CareerEntry.objects
-        .filter(user=user, embedding__isnull=False)
+    base = CareerEntry.objects.filter(user=user, embedding__isnull=False)
+
+    projects = (
+        base.filter(category='project')
+        .annotate(distance=CosineDistance('embedding', jd_embedding))
+        .order_by('distance')[:top_n_projects]
+    )
+    others = (
+        base.exclude(category='project')
         .annotate(distance=CosineDistance('embedding', jd_embedding))
         .order_by('distance')[:top_n]
     )
+
+    # Combine while preserving relative rank within each group
+    combined_ids = list(projects.values_list('id', flat=True)) + list(others.values_list('id', flat=True))
+    return CareerEntry.objects.filter(id__in=combined_ids).annotate(
+        distance=CosineDistance('embedding', jd_embedding)
+    ).order_by('distance')
 
 def compute_ats_score(match_score: float, parseability_result: dict) -> dict:
     """

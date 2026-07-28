@@ -42,7 +42,7 @@ JSON with exactly this shape:
   "projects": [
     {{
       "title": "Project title",
-      "year": "2026",
+      "year": "derive from the entry's date range, e.g. '2026' or '2025-2026'",
       "bullets": ["Rewritten, quantified bullet point tailored to the role", "..."]
     }}
   ],
@@ -112,7 +112,8 @@ def generate_resume(resume_id, jd_id):
 
     entries = get_relevant_entries(resume.user, jd.embedding, top_n=8)
     entries_text = "\n\n".join(
-        f"- [{e.category}] {e.title}: {e.description} (Tech: {', '.join(e.tech_stack)})"
+        f"- [{e.category}] {e.title} ({e.duration_start or '?'} to {e.duration_end or 'present'}): "
+        f"{e.description} (Tech: {', '.join(e.tech_stack)})"
         for e in entries
     )
 
