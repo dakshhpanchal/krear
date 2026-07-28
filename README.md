@@ -23,7 +23,7 @@ descriptions — complete with an ATS parseability score before you send anythin
 
 **Backend:** Django + Django REST Framework + PostgreSQL + `pgvector` + Celery/Redis
 **AI:** Groq (Llama 3.3 70B) for JD parsing and resume generation; `bge-small-en-v1.5`
-(local, via `sentence-transformers`) for embeddings
+via Hugging Face's hosted Inference API for embeddings
 **PDF pipeline:** Jinja2 → LaTeX → Tectonic
 **Frontend:** React + Vite + TanStack Router/Query + Tailwind + shadcn/ui
 
@@ -44,12 +44,16 @@ descriptions — complete with an ATS parseability score before you send anythin
                 ┌─────────────┼─────────────┐
                 ▼             ▼             ▼
           Embeddings     JD Parsing    Resume Gen
-        (bge-small,      (Groq/Llama)  + LaTeX/PDF
-         local, CPU)                   compilation
+        (bge-small via   (Groq/Llama)  + LaTeX/PDF
+         HF Inference                  compilation
+         API)
 ```
 
-Embeddings are generated locally (no external API dependency for this step); JD
-parsing and resume tailoring go through Groq's hosted Llama 3.3 70B.
+Embeddings are generated via Hugging Face's hosted Inference API rather than
+in-process — running `sentence-transformers`/`torch` locally exceeded Render's
+free-tier 512MB memory limit at idle, so `torch`/`transformers`/
+`sentence-transformers` were removed from `requirements.txt` entirely. JD parsing
+and resume tailoring go through Groq's hosted Llama 3.3 70B.
 
 ## Project structure
 
@@ -91,6 +95,7 @@ Required environment variables (`.env`, not committed):
 ```
 SECRET_KEY=...
 GROQ_API_KEY=...
+HF_TOKEN=...
 DEBUG=True
 ```
 
@@ -104,20 +109,43 @@ Set `VITE_API_URL` in `.env.local` if the backend isn't on `http://localhost:800
 
 ## Deployment
 
-- **Backend** — containerized via `backend/Dockerfile` (includes Tectonic and a
-  pre-downloaded embedding model). Deployed as two services from the same image:
-  a web process (`entrypoint.sh` → migrate → collectstatic → gunicorn) and a
-  Celery worker process. Requires Postgres (with `pgvector` enabled) and Redis.
-- **Frontend** — static Vite build (`npm run build` → `dist/`), deployed behind
-  a rewrite rule that funnels all routes to `index.html` (see `frontend/vercel.json`)
-  since routing is entirely client-side.
+- **Backend** — containerized via `backend/Dockerfile` (includes Tectonic and its
+  required system libraries: `libgraphite2-3`, `libharfbuzz0b`, `libfontconfig1`,
+  `libicu-dev`). Deployed on Render as a single web process
+  (`entrypoint.sh` → migrate → collectstatic → gunicorn, with a Celery worker
+  running alongside it). Requires Postgres (with `pgvector` enabled) and Redis.
+  Generated PDFs are stored as binary data directly in Postgres rather than on
+  local disk, since Render's free-tier filesystem is ephemeral and resets on
+  container restarts.
+- **Frontend** — static Vite build (`npm run build` → `dist/`), deployed on Vercel
+  behind a rewrite rule that funnels all routes to `index.html` (see
+  `frontend/vercel.json`) since routing is entirely client-side.
+- **Path-filtered deploys** — frontend-only and backend-only commits no longer
+  trigger cross-service rebuilds:
+  - Render: Settings → Build → Build Filters → Included Paths → `backend/**`
+  - Vercel: Settings → Build and Deployment → Ignored Build Step, using
+    `git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- frontend/`
+    (avoid `HEAD^`-based diffs — Vercel's shallow clone doesn't reliably have
+    prior history, which can make the check silently skip real changes)
 
 ## Project status
 
-Fully built and validated end-to-end: Career Bank CRUD, embeddings pipeline, JD
-analysis with match scoring, AI resume generation with LaTeX/PDF compilation, and
-ATS parseability scoring. Application tracker and cover letter generation in
-progress.
+Career Bank CRUD, embeddings pipeline, JD analysis with match scoring, AI resume
+generation with LaTeX/PDF compilation (Projects, Experience, and Education
+sections all dynamic per-user), and ATS parseability scoring are working
+end-to-end and deployed.
+
+**Not yet multi-user-safe:** the resume template's header (name/phone/email/
+LinkedIn/GitHub), Leadership section, and Technical Skills section are still
+hardcoded to the original account's data rather than pulled from each user's own
+profile/Career Bank/Skill records. A `Profile` model, its API endpoint, and a
+frontend settings page don't exist yet — this is the next planned unit of work,
+followed by finishing the template's dynamic sections, adding generation-status
+notifications/progress UI, and then refining prompt and ATS-scoring quality.
+
+Application tracker (`applications` app) is scaffolded on the backend
+(models/serializers/views/urls) but has no frontend routes yet. Cover letter
+generation is modeled but not yet built out.
 
 ## License
 
