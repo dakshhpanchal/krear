@@ -151,7 +151,7 @@ function ResumeDetail() {
         }
       />
 
-      <div className="mt-10 grid gap-4 lg:grid-cols-[16rem_1fr_18rem]">
+      <div className="mt-10 grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)_18rem]">
         <aside className="paper-card h-fit p-6">
           <MonoLabel>Versions</MonoLabel>
           <div className="mt-4 flex flex-col gap-2">

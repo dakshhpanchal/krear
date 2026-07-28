@@ -62,7 +62,7 @@ function JobDetail() {
         }
       />
 
-      <div className="mt-10 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+      <div className="mt-10 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <section className="paper-card p-8">
           <MonoLabel>Raw posting</MonoLabel>
           <p className="mt-5 whitespace-pre-wrap text-sm leading-relaxed">

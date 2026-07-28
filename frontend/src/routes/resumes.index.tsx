@@ -50,7 +50,7 @@ function ResumesPage() {
         description="One resume per target. Every generation adds a version with a diff and an ATS score."
       />
 
-      <div className="mt-10 grid gap-4 lg:grid-cols-[1fr_22rem]">
+      <div className="mt-10 grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-4">
           {error && (
             <p className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4 font-mono text-sm text-destructive">

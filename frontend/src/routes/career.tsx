@@ -257,7 +257,7 @@ function SkillsPanel() {
   return (
     <section className="mt-16">
       <div className="grain-divider" />
-      <div className="mt-10 grid gap-4 lg:grid-cols-[1fr_20rem]">
+      <div className="mt-10 grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="paper-card p-8">
           <MonoLabel>Skill matrix</MonoLabel>
           <div className="mt-6 grid gap-6 sm:grid-cols-2">

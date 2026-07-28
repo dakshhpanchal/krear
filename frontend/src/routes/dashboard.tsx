@@ -79,7 +79,7 @@ function Dashboard() {
         <Stat label="Applications" value={applications.length} to="/applications" />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <section className="paper-card p-8">
           <MonoLabel>Pipeline</MonoLabel>
           <div className="mt-6 flex flex-col gap-4">
