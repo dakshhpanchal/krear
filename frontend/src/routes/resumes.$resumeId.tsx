@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Download, Sparkles } from "lucide-react";
-import { API_BASE, api } from "@/lib/api";
+import { API_BASE, api, tokenStore } from "@/lib/api";
 import { MonoLabel, Tag } from "@/components/krear/primitives";
 import { SortableList } from "@/components/krear/sortable-list";
 import { PageHeader, RequireAuth, WorkspacePage } from "@/components/krear/workspace";
@@ -46,6 +46,7 @@ function ResumeDetail() {
   const { data: versions = [], isLoading } = useResumeVersions(id);
   const [activeId, setActiveId] = useState<number | null>(null);
   const active = versions.find((v) => v.id === activeId) ?? versions[0];
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!activeId && versions.length) setActiveId(versions[0].id);
@@ -94,7 +95,38 @@ function ResumeDetail() {
     saveSections.mutate({ version: active, sections: next });
   }
 
-  const score = Number(ats.data?.score ?? NaN);
+  // The download endpoint requires the JWT Authorization header, which a plain
+  // <a href> won't attach (token lives in localStorage, not a cookie). Fetch
+  // the PDF as a blob with auth, then trigger a client-side download instead.
+  async function downloadPdf() {
+    if (!active) return;
+    setDownloading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/resume-versions/${active.id}/download/`, {
+        headers: { Authorization: `Bearer ${tokenStore.access}` },
+      });
+      if (!res.ok) throw new Error(`Download failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `resume_v${active.version_number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Download failed");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  const score = Number(ats.data?.overall_score ?? NaN);
+  const matchedKeywords = Object.values(ats.data?.matched_required ?? {}).concat(
+    Object.values(ats.data?.matched_preferred ?? {}),
+  );
+  const missingKeywords = (ats.data?.missing_required ?? []).concat(ats.data?.missing_preferred ?? []);
 
   return (
     <WorkspacePage>
@@ -201,13 +233,13 @@ function ResumeDetail() {
             <MonoLabel>Keywords</MonoLabel>
             <p className="mt-4 font-mono text-xs text-muted-foreground">matched</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {(ats.data?.matched_keywords ?? []).map((k) => (
+              {matchedKeywords.map((k) => (
                 <Tag key={k}>{k}</Tag>
               ))}
             </div>
             <p className="mt-5 font-mono text-xs text-muted-foreground">missing</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {(ats.data?.missing_keywords ?? []).map((k) => (
+              {missingKeywords.map((k) => (
                 <span
                   key={k}
                   className="rounded-full border border-destructive/40 px-3 py-1 font-mono text-[0.7rem] text-destructive"
@@ -221,15 +253,14 @@ function ResumeDetail() {
             )}
           </section>
 
-          {active?.pdf_file && (
-            <a
-              href={active.pdf_file.startsWith("http") ? active.pdf_file : `${API_BASE}${active.pdf_file}`}
-              target="_blank"
-              rel="noreferrer"
-              className="paper-card inline-flex items-center justify-center gap-2 p-5 font-mono text-sm hover:-translate-y-0.5"
+          {active?.has_pdf && (
+            <button
+              onClick={downloadPdf}
+              disabled={downloading}
+              className="paper-card inline-flex items-center justify-center gap-2 p-5 font-mono text-sm hover:-translate-y-0.5 disabled:opacity-50"
             >
-              <Download className="size-4" /> Download PDF
-            </a>
+              <Download className="size-4" /> {downloading ? "Downloading…" : "Download PDF"}
+            </button>
           )}
         </div>
       </div>

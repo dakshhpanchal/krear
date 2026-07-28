@@ -71,7 +71,8 @@ export interface ResumeVersion {
   version_number: number;
   content: { sections?: ResumeSection[] } & Record<string, unknown>;
   diff_from_previous: unknown;
-  pdf_file: string | null;
+  has_pdf: boolean;
+  pdf_filename: string | null;
   created_at?: string;
 }
 
@@ -124,8 +125,12 @@ export interface ActivityLog {
 }
 
 export interface AtsScore {
-  score?: number;
-  matched_keywords?: string[];
-  missing_keywords?: string[];
-  [key: string]: unknown;
+  content_score: number;
+  parseability_score: number;
+  overall_score: number;
+  parseability_issues: string[];
+  matched_required: Record<string, string>;
+  missing_required: string[];
+  matched_preferred: Record<string, string>;
+  missing_preferred: string[];
 }
