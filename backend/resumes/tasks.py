@@ -148,12 +148,26 @@ def generate_resume(resume_id, jd_id):
 def compile_resume_pdf(resume_version_id):
     from .models import ResumeVersion
     from .latex import render_resume_tex, compile_latex_to_pdf
+    from career.models import CareerEntry
 
     version = ResumeVersion.objects.get(id=resume_version_id)
+
+    education = CareerEntry.objects.filter(
+        user=version.resume.user, category='education'
+    ).order_by('-duration_start')
 
     context = {
         'projects': version.content.get('projects', []),
         'experience': version.content.get('experience', []),
+        'education': [
+            {
+                'title': e.title,
+                'description': e.description,
+                'start': e.duration_start.year if e.duration_start else '',
+                'end': e.duration_end.year if e.duration_end else 'Present',
+            }
+            for e in education
+        ],
     }
 
     tex_content = render_resume_tex(context)
