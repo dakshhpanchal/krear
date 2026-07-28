@@ -60,14 +60,16 @@
     \href{https://github.com/dakshhpanchal}{\seticon{faGithub} GitHub}
 \end{center}
 
-%-----------EDUCATION-----------%
+%-----------EDUCATION (DYNAMIC)-----------%
 \section{Education}
 \resumeSubHeadingListStart
+\BLOCK{for edu in education}
 \item
 \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
-  \textbf{Delhi Technological University} & \textbf{Aug 2024 -- May 2028} \\
-  \textit{B.Tech Computer Science and Engineering $|$ GPA: 8.87/10 (up to 3rd sem)} & \textit{Delhi} \\
+  \textbf{\VAR{edu.title|escape_latex}} & \textbf{\VAR{edu.start|escape_latex} -- \VAR{edu.end|escape_latex}} \\
+  \textit{\VAR{edu.description|escape_latex}} & \\
 \end{tabular*}
+\BLOCK{endfor}
 \resumeSubHeadingListEnd
 
 %-----------PERSONAL PROJECTS (DYNAMIC)-----------%
