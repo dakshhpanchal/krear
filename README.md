@@ -4,6 +4,8 @@ Krear helps you manage a structured "Career Bank" of your projects, experience, 
 skills, then uses retrieval-augmented generation to tailor resumes to specific job
 descriptions — complete with an ATS parseability score before you send anything out.
 
+**Live:** [krear-gamma.vercel.app](https://krear-gamma.vercel.app) (backend API at `https://krear.onrender.com`)
+
 ## What it does
 
 1. **Career Bank** — a structured database of your projects, experience, and skills
