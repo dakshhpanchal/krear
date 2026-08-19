@@ -86,7 +86,7 @@ def parse_job_description(jd_id):
     client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "user", "content": EXTRACTION_PROMPT.format(jd_text=jd.raw_text)}
         ],
@@ -120,7 +120,7 @@ def generate_resume(resume_id, jd_id):
 
     client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=[{
             "role": "user",
             "content": GENERATION_PROMPT.format(
