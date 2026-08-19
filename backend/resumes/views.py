@@ -27,6 +27,9 @@ class ResumeViewSet(viewsets.ModelViewSet):
         resume = self.get_object()
         if not resume.job_description_id:
             return Response({"error": "This resume has no linked job description."}, status=400)
+        resume.generation_progress = 0
+        resume.generation_status = "Queued for generation..."
+        resume.save(update_fields=['generation_progress', 'generation_status'])
         generate_resume.delay(resume.id, resume.job_description_id)
         return Response({"status": "generation started"}, status=202)
 

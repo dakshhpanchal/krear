@@ -22,6 +22,8 @@ class Resume(TimestampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='resumes')
     job_description = models.ForeignKey(JobDescription, on_delete=models.SET_NULL, null=True, blank=True, related_name='resumes')
     title = models.CharField(max_length=255)
+    generation_progress = models.IntegerField(default=0)
+    generation_status = models.CharField(max_length=255, default='idle')
 
     def __str__(self):
         return self.title

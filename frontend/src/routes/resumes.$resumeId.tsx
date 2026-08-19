@@ -48,9 +48,14 @@ function ResumeDetail() {
   const active = versions.find((v) => v.id === activeId) ?? versions[0];
   const [downloading, setDownloading] = useState(false);
 
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [expectedVersionCount, setExpectedVersionCount] = useState(0);
+
+  const isGenerating = Boolean(
+    resume.data?.generation_status &&
+      !["idle", "failed"].includes(resume.data.generation_status)
+  );
+  const progress = resume.data?.generation_progress ?? 0;
+  const statusText = resume.data?.generation_status ?? "";
 
   useEffect(() => {
     if (!activeId && versions.length) setActiveId(versions[0].id);
@@ -61,8 +66,8 @@ function ResumeDetail() {
     onSuccess: () => {
       toast.success("Generation requested");
       setExpectedVersionCount(versions.length + 1);
-      setProgress(0);
-      setIsGenerating(true);
+      qc.invalidateQueries({ queryKey: ["resume", resumeId] });
+      qc.invalidateQueries({ queryKey: ["resume-versions"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Generation failed"),
   });
@@ -71,47 +76,35 @@ function ResumeDetail() {
     if (!isGenerating) return;
 
     const pollInterval = setInterval(() => {
+      qc.invalidateQueries({ queryKey: ["resume", resumeId] });
       qc.invalidateQueries({ queryKey: ["resume-versions"] });
-    }, 2000);
-
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev < 90) {
-          return prev + Math.floor(Math.random() * 3) + 1;
-        }
-        return prev;
-      });
-    }, 300);
+    }, 1500);
 
     return () => {
       clearInterval(pollInterval);
-      clearInterval(progressInterval);
     };
-  }, [isGenerating, qc]);
+  }, [isGenerating, qc, resumeId]);
 
   useEffect(() => {
-    if (!isGenerating) return;
-
-    const newVersion = versions.find((v) => v.version_number === expectedVersionCount);
-    if (newVersion) {
-      if (newVersion.has_pdf) {
-        setProgress(100);
-        const timer = setTimeout(() => {
-          setIsGenerating(false);
+    if (!isGenerating && expectedVersionCount > 0) {
+      const newVersion = versions.find((v) => v.version_number === expectedVersionCount);
+      if (newVersion) {
+        if (newVersion.has_pdf) {
           setActiveId(newVersion.id);
           toast.success(`Version ${expectedVersionCount} generated successfully!`);
-        }, 800);
-        return () => clearTimeout(timer);
-      } else if (
-        newVersion.diff_from_previous &&
-        typeof newVersion.diff_from_previous === "object" &&
-        "compile_error" in newVersion.diff_from_previous
-      ) {
-        setIsGenerating(false);
-        toast.error(`Compilation failed: ${(newVersion.diff_from_previous as any).compile_error}`);
+          setExpectedVersionCount(0);
+        } else if (
+          newVersion.diff_from_previous &&
+          typeof newVersion.diff_from_previous === "object" &&
+          "compile_error" in newVersion.diff_from_previous
+        ) {
+          toast.error(`Compilation failed: ${(newVersion.diff_from_previous as any).compile_error}`);
+          setExpectedVersionCount(0);
+        }
       }
     }
-  }, [versions, isGenerating, expectedVersionCount]);
+  }, [isGenerating, expectedVersionCount, versions]);
+
 
 
   const saveSections = useMutation({
@@ -236,8 +229,8 @@ function ResumeDetail() {
           {isGenerating && (
             <div className="mb-6 mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs font-semibold text-primary animate-pulse">
-                  GENERATING VERSION {expectedVersionCount}...
+                <span className="font-mono text-xs font-semibold text-primary animate-pulse uppercase">
+                  {statusText || "Starting Generation..."}
                 </span>
                 <span className="font-mono text-xs font-semibold text-primary">{progress}%</span>
               </div>
@@ -247,9 +240,6 @@ function ResumeDetail() {
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Analyzing career entries, tailoring bullet points to job description, and compiling LaTeX PDF...
-              </p>
             </div>
           )}
           {!active && !isGenerating && (

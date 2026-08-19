@@ -107,7 +107,15 @@ def generate_resume(resume_id, jd_id):
     from career.services import get_relevant_entries
 
     resume = Resume.objects.get(id=resume_id)
+    resume.generation_progress = 10
+    resume.generation_status = "Analyzing job description..."
+    resume.save(update_fields=['generation_progress', 'generation_status'])
+
     jd = JobDescription.objects.get(id=jd_id)
+
+    resume.generation_progress = 30
+    resume.generation_status = "Retrieving relevant career entries..."
+    resume.save(update_fields=['generation_progress', 'generation_status'])
 
     entries = get_relevant_entries(resume.user, jd.embedding, top_n=8)
     entries_text = "\n\n".join(
@@ -117,6 +125,10 @@ def generate_resume(resume_id, jd_id):
     )
 
     req = jd.parsed_requirements or {}
+
+    resume.generation_progress = 50
+    resume.generation_status = "Tailoring resume content with LLM..."
+    resume.save(update_fields=['generation_progress', 'generation_status'])
 
     client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
     response = client.chat.completions.create(
@@ -135,6 +147,10 @@ def generate_resume(resume_id, jd_id):
     )
 
     content = json.loads(response.choices[0].message.content)
+
+    resume.generation_progress = 75
+    resume.generation_status = "Compiling PDF document..."
+    resume.save(update_fields=['generation_progress', 'generation_status'])
 
     next_version = ResumeVersion.objects.filter(resume=resume).count() + 1
     version = ResumeVersion.objects.create(
@@ -208,9 +224,19 @@ def compile_resume_pdf(resume_version_id):
     except RuntimeError as e:
         version.diff_from_previous = {'compile_error': str(e)}
         version.save(update_fields=['diff_from_previous'])
+        
+        resume = version.resume
+        resume.generation_progress = 100
+        resume.generation_status = "failed"
+        resume.save(update_fields=['generation_progress', 'generation_status'])
         return
 
     filename = f"resume_v{version.version_number}.pdf"
     version.pdf_data = pdf_bytes
     version.pdf_filename = filename
     version.save(update_fields=['pdf_data', 'pdf_filename'])
+
+    resume = version.resume
+    resume.generation_progress = 100
+    resume.generation_status = "idle"
+    resume.save(update_fields=['generation_progress', 'generation_status'])

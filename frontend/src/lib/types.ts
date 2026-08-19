@@ -57,6 +57,8 @@ export interface Resume {
   id: number;
   title: string;
   job_description: number | null;
+  generation_progress?: number;
+  generation_status?: string;
   created_at?: string;
 }
 
