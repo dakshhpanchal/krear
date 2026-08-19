@@ -134,3 +134,13 @@ export interface AtsScore {
   matched_preferred: Record<string, string>;
   missing_preferred: string[];
 }
+
+export interface Profile {
+  id: number;
+  full_name: string;
+  phone: string;
+  email: string;
+  linkedin_url: string;
+  github_url: string;
+  location: string;
+}

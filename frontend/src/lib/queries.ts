@@ -6,6 +6,7 @@ import type {
   CareerEntry,
   CoverLetter,
   JobDescription,
+  Profile,
   Resume,
   ResumeVersion,
   Skill,
@@ -102,3 +103,20 @@ export function useRemove(path: string, key: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: [key] }),
   });
 }
+
+export function useProfile() {
+  return useQuery({
+    queryKey: ["profile"],
+    queryFn: () => api.get<Profile>("/api/profile/me/"),
+    enabled: enabledInBrowser,
+  });
+}
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<Profile>) => api.patch<Profile>("/api/profile/me/", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+  });
+}
+

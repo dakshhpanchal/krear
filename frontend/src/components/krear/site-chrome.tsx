@@ -13,6 +13,7 @@ const LINKS = [
   { to: "/resumes", label: "Resumes" },
   { to: "/applications", label: "Applications" },
   { to: "/cover-letters", label: "Letters" },
+  { to: "/profile", label: "Profile" },
 ];
 
 export function SiteHeader() {
