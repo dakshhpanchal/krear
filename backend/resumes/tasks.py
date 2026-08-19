@@ -148,15 +148,30 @@ def generate_resume(resume_id, jd_id):
 def compile_resume_pdf(resume_version_id):
     from .models import ResumeVersion
     from .latex import render_resume_tex, compile_latex_to_pdf
-    from career.models import CareerEntry
+    from career.models import CareerEntry, Profile, Skill
 
     version = ResumeVersion.objects.get(id=resume_version_id)
+    user = version.resume.user
+
+    profile, _ = Profile.objects.get_or_create(user=user)
 
     education = CareerEntry.objects.filter(
-        user=version.resume.user, category='education'
+        user=user, category='education'
     ).order_by('-duration_start')
 
+    leadership_entries = CareerEntry.objects.filter(
+        user=user, category='leadership'
+    ).order_by('-duration_start')
+
+    skills = Skill.objects.filter(user=user)
+
+    skills_by_category = {}
+    for skill in skills:
+        category = skill.category or 'Skills'
+        skills_by_category.setdefault(category, []).append(skill.name)
+
     context = {
+        'profile': profile,
         'projects': version.content.get('projects', []),
         'experience': version.content.get('experience', []),
         'education': [
@@ -167,6 +182,22 @@ def compile_resume_pdf(resume_version_id):
                 'end': e.duration_end.year if e.duration_end else 'Present',
             }
             for e in education
+        ],
+        'leadership': [
+            {
+                'title': e.title,
+                'start': e.duration_start.year if e.duration_start else '',
+                'end': e.duration_end.year if e.duration_end else 'Present',
+                'bullets': [e.description],
+            }
+            for e in leadership_entries
+        ],
+        'skills': [
+            {
+                'category': category,
+                'items': ', '.join(items),
+            }
+            for category, items in skills_by_category.items()
         ],
     }
 
