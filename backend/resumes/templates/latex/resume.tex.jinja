@@ -129,7 +129,7 @@
 \begin{itemize}[leftmargin=0.1in, label={}, itemsep=0pt, topsep=2pt]
 \scriptsize{\item{
 \BLOCK{for group in skills}
-\textbf{\VAR{group.category|escape_latex}:} \VAR{group.items|escape_latex} \\[1pt]
+\textbf{\VAR{group['category']|escape_latex}:} \VAR{group['items']|escape_latex} \\[1pt]
 \BLOCK{endfor}
 }}
 \end{itemize}

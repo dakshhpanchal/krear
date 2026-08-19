@@ -48,6 +48,10 @@ function ResumeDetail() {
   const active = versions.find((v) => v.id === activeId) ?? versions[0];
   const [downloading, setDownloading] = useState(false);
 
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [expectedVersionCount, setExpectedVersionCount] = useState(0);
+
   useEffect(() => {
     if (!activeId && versions.length) setActiveId(versions[0].id);
   }, [versions, activeId]);
@@ -56,10 +60,59 @@ function ResumeDetail() {
     mutationFn: () => api.post(`/api/resumes/${resumeId}/generate/`),
     onSuccess: () => {
       toast.success("Generation requested");
-      qc.invalidateQueries({ queryKey: ["resume-versions"] });
+      setExpectedVersionCount(versions.length + 1);
+      setProgress(0);
+      setIsGenerating(true);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Generation failed"),
   });
+
+  useEffect(() => {
+    if (!isGenerating) return;
+
+    const pollInterval = setInterval(() => {
+      qc.invalidateQueries({ queryKey: ["resume-versions"] });
+    }, 2000);
+
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 90) {
+          return prev + Math.floor(Math.random() * 3) + 1;
+        }
+        return prev;
+      });
+    }, 300);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearInterval(progressInterval);
+    };
+  }, [isGenerating, qc]);
+
+  useEffect(() => {
+    if (!isGenerating) return;
+
+    const newVersion = versions.find((v) => v.version_number === expectedVersionCount);
+    if (newVersion) {
+      if (newVersion.has_pdf) {
+        setProgress(100);
+        const timer = setTimeout(() => {
+          setIsGenerating(false);
+          setActiveId(newVersion.id);
+          toast.success(`Version ${expectedVersionCount} generated successfully!`);
+        }, 800);
+        return () => clearTimeout(timer);
+      } else if (
+        newVersion.diff_from_previous &&
+        typeof newVersion.diff_from_previous === "object" &&
+        "compile_error" in newVersion.diff_from_previous
+      ) {
+        setIsGenerating(false);
+        toast.error(`Compilation failed: ${(newVersion.diff_from_previous as any).compile_error}`);
+      }
+    }
+  }, [versions, isGenerating, expectedVersionCount]);
+
 
   const saveSections = useMutation({
     mutationFn: ({ version, sections }: { version: ResumeVersion; sections: ResumeSection[] }) =>
@@ -141,11 +194,11 @@ function ResumeDetail() {
             </Link>
             <button
               onClick={() => generate.mutate()}
-              disabled={generate.isPending}
+              disabled={generate.isPending || isGenerating}
               className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-serif italic text-primary-foreground disabled:opacity-50"
             >
               <Sparkles className="size-4" />
-              {generate.isPending ? "Generating…" : "Generate version"}
+              {generate.isPending || isGenerating ? "Generating…" : "Generate version"}
             </button>
           </>
         }
@@ -180,7 +233,28 @@ function ResumeDetail() {
 
         <section className="paper-card p-8">
           <MonoLabel>Content</MonoLabel>
-          {!active && <p className="mt-6 text-sm text-muted-foreground">Generate a version to edit content.</p>}
+          {isGenerating && (
+            <div className="mb-6 mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-xs font-semibold text-primary animate-pulse">
+                  GENERATING VERSION {expectedVersionCount}...
+                </span>
+                <span className="font-mono text-xs font-semibold text-primary">{progress}%</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full bg-primary transition-all duration-300 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Analyzing career entries, tailoring bullet points to job description, and compiling LaTeX PDF...
+              </p>
+            </div>
+          )}
+          {!active && !isGenerating && (
+            <p className="mt-6 text-sm text-muted-foreground">Generate a version to edit content.</p>
+          )}
           {active && sections.length === 0 && (
             <pre className="mt-6 overflow-x-auto rounded-2xl bg-muted p-4 font-mono text-xs">
               {JSON.stringify(active.content, null, 2)}
