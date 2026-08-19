@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from .models import CareerEntry, Skill
+from .models import CareerEntry, Skill, Profile
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['id', 'full_name', 'phone', 'email', 'linkedin_url', 'github_url', 'location']
+        read_only_fields = ['id']
 
 class CareerEntrySerializer(serializers.ModelSerializer):
     class Meta:

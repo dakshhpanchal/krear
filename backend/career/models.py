@@ -9,6 +9,18 @@ class TimestampedModel(models.Model):
     class Meta:
         abstract = True
 
+class Profile(TimestampedModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    full_name = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=50, blank=True)
+    email = models.EmailField(blank=True)
+    linkedin_url = models.URLField(blank=True)
+    github_url = models.URLField(blank=True)
+    location = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.full_name or self.user.username
+
 class CareerEntry(TimestampedModel):
     CATEGORY_CHOICES = [
         ('project', 'Project'),
@@ -27,7 +39,7 @@ class CareerEntry(TimestampedModel):
     description = models.TextField()
 
     tech_stack = models.JSONField(default=list, blank=True)
-    metrics = models.JSONField(default=list, blank=True)   
+    metrics = models.JSONField(default=list, blank=True)
     tags = models.JSONField(default=list, blank=True)
     duration_start = models.DateField(null=True, blank=True)
     duration_end = models.DateField(null=True, blank=True)
