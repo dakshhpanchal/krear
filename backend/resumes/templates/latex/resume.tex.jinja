@@ -51,13 +51,14 @@
 
 \begin{document}
 
-%----------HEADING----------%
+%----------HEADING (DYNAMIC)----------%
 \begin{center}
-    {\Large \scshape DAKSH PANCHAL} \\ \vspace{3pt}
-    \scriptsize \seticon{faPhone} +91 9910153794 \quad
-    \href{mailto:dakshpanchal08@gmail.com}{\seticon{faEnvelope} dakshpanchal08@gmail.com} \quad
-    \href{https://www.linkedin.com/in/dakshhpanchal}{\seticon{faLinkedin} LinkedIn} \quad
-    \href{https://github.com/dakshhpanchal}{\seticon{faGithub} GitHub}
+    {\Large \scshape \VAR{profile.full_name|escape_latex}} \\ \vspace{3pt}
+    \scriptsize
+    \BLOCK{if profile.phone}\seticon{faPhone} \VAR{profile.phone|escape_latex} \quad\BLOCK{endif}
+    \BLOCK{if profile.email}\href{mailto:\VAR{profile.email}}{\seticon{faEnvelope} \VAR{profile.email|escape_latex}} \quad\BLOCK{endif}
+    \BLOCK{if profile.linkedin_url}\href{\VAR{profile.linkedin_url}}{\seticon{faLinkedin} LinkedIn} \quad\BLOCK{endif}
+    \BLOCK{if profile.github_url}\href{\VAR{profile.github_url}}{\seticon{faGithub} GitHub}\BLOCK{endif}
 \end{center}
 
 %-----------EDUCATION (DYNAMIC)-----------%
@@ -75,6 +76,7 @@
 \BLOCK{endif}
 
 %-----------PERSONAL PROJECTS (DYNAMIC)-----------%
+\BLOCK{if projects}
 \section{Personal Projects}
 \resumeSubHeadingListStart
 \BLOCK{for project in projects}
@@ -87,10 +89,11 @@
 \resumeItemListEnd
 \BLOCK{endfor}
 \resumeSubHeadingListEnd
+\BLOCK{endif}
 
 %-----------EXPERIENCE (DYNAMIC)-----------%
 \BLOCK{if experience}
-\section{Experience \& Leadership}
+\section{Experience}
 \resumeSubHeadingListStart
 \BLOCK{for exp in experience}
 \resumeProjectHeading
@@ -104,30 +107,32 @@
 \resumeSubHeadingListEnd
 \BLOCK{endif}
 
-%-----------POSITIONS OF RESPONSIBILITY (STATIC)-----------%
+%-----------POSITIONS OF RESPONSIBILITY (DYNAMIC)-----------%
+\BLOCK{if leadership}
 \section{Position of Responsibility}
 \resumeSubHeadingListStart
-
+\BLOCK{for role in leadership}
 \resumeProjectHeading
-{\textbf{UGV-DTU Research Team}}{Aug 2024 -- Present}
+{\textbf{\VAR{role.title|escape_latex}}}{\VAR{role.start|escape_latex} -- \VAR{role.end|escape_latex}}
 \resumeItemListStart
-\resumeItem{\textbf{Software Head (2025--Present):} Lead a team of 15+ software engineers; own software architecture, codebase standards, technical direction, and Agile sprint planning across all competition deliverables}
-\resumeItem{\textbf{Software Engineer (2024--2025):} Drove core autonomy, navigation, and sensor fusion modules; maintained 20+ Git-based version control workflows and code review processes across team}
+\BLOCK{for bullet in role.bullets}
+\resumeItem{\VAR{bullet|escape_latex}}
+\BLOCK{endfor}
 \resumeItemListEnd
-
+\BLOCK{endfor}
 \resumeSubHeadingListEnd
+\BLOCK{endif}
 
-%-----------SKILLS (STATIC)-----------%
+%-----------SKILLS (DYNAMIC)-----------%
+\BLOCK{if skills}
 \section{Technical Skills}
 \begin{itemize}[leftmargin=0.1in, label={}, itemsep=0pt, topsep=2pt]
 \scriptsize{\item{
-\textbf{Languages:} C++17/20, Python, JavaScript/TypeScript, Bash, SQL, Java, Dart \\[1pt]
-\textbf{Frontend:} Next.js, React, Vite, Flutter, HTML/CSS \\[1pt]
-\textbf{Backend:} FastAPI, Flask, Django, Node.js, Express.js, REST APIs, Microservices, Authentication \\[1pt]
-\textbf{Databases \& Storage:} MongoDB, PostgreSQL, SQLite, MySQL \\[1pt]
-\textbf{Libraries \& Data:} OpenCV, NumPy, Pandas, TensorFlow \\[1pt]
-\textbf{Systems \& DevOps:} Linux, Docker, Git, CI/CD, GitHub Actions, System Design \\[1pt]
+\BLOCK{for group in skills}
+\textbf{\VAR{group.category|escape_latex}:} \VAR{group.items|escape_latex} \\[1pt]
+\BLOCK{endfor}
 }}
 \end{itemize}
+\BLOCK{endif}
 
 \end{document}
